@@ -30,7 +30,7 @@ class ScanActivity : ComponentActivity() {
 
 @Composable
 fun ScanScreen() {
-    Text(text = "Scan BLE en cours...")
+    Text(text = "Lancer le scan BLE")
 }
 
 @Preview(showBackground = true)
