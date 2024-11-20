@@ -7,7 +7,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.wifi.ScanResult
+import android.bluetooth.le.ScanResult
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -39,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,8 +92,29 @@ class ScanActivity : ComponentActivity() {
                     // Header text
                     Text("Scanning for BLE Devices", style = MaterialTheme.typography.headlineMedium)
 
+                    // Bouton image (Play/Pause)
+                    androidx.compose.material3.IconButton(
+                        onClick = {
+                            if (isScanning.value) {
+                                stopScan()
+                            } else {
+                                startScan()
+                            }
+                            isScanning.value = !isScanning.value
+                        }
+                    ) {
+                        androidx.compose.material3.Icon(
+                            painter = painterResource(
+                                id = if (isScanning.value) {
+                                    R.drawable.pause_circle
+                                } else R.drawable.play_circle
+                            ),
+                            contentDescription = if (isScanning.value) "Pause Scan" else "Start Scan",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     // Button to start/stop scan
-                    Button(
+                    /*Button(
                         onClick = {
                             if (isScanning.value) {
                                 stopScan()
@@ -104,7 +126,7 @@ class ScanActivity : ComponentActivity() {
                     ) {
                         Text(text = if (isScanning.value) "Stop Scan" else "Start Scan")
                     }
-
+*/
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Display the scanned devices
@@ -190,6 +212,7 @@ class ScanActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun DeviceItem(scanResult: ScanResult) {
     val context = LocalContext.current
@@ -225,3 +248,4 @@ fun DeviceItem(scanResult: ScanResult) {
         Text(text = "Permission required to connect to the device.")
     }
 }
+
