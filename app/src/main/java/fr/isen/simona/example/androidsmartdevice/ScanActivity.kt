@@ -85,10 +85,14 @@ class ScanActivity : ComponentActivity() {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Top
                 ) {
                     // Header text
-                    Text("Scanning for BLE Devices", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        text = if (isScanning.value) "Scan BLE en cours ..." else "Lancer le Scan BLE",
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(16.dp)
+                    )
 
                     // Bouton image (Play/Pause)
                     androidx.compose.material3.IconButton(
@@ -104,9 +108,7 @@ class ScanActivity : ComponentActivity() {
                     ) {
                         androidx.compose.material3.Icon(
                             painter = painterResource(
-                                id = if (isScanning.value) {
-                                    R.drawable.pause_circle
-                                } else R.drawable.play_circle
+                                id = if (isScanning.value) R.drawable.pause_circle else R.drawable.play_circle
                             ),
                             contentDescription = if (isScanning.value) "Pause Scan" else "Start Scan",
                             tint = Color(android.graphics.Color.parseColor("#FF0099CC")),
