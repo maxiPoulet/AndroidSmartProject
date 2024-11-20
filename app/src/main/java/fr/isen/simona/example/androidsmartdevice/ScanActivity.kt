@@ -113,20 +113,7 @@ class ScanActivity : ComponentActivity() {
                             modifier = Modifier.size(64.dp)
                         )
                     }
-                    // Button to start/stop scan
-                    /*Button(
-                        onClick = {
-                            if (isScanning.value) {
-                                stopScan()
-                            } else {
-                                startScan()
-                            }
-                            isScanning.value = !isScanning.value
-                        }
-                    ) {
-                        Text(text = if (isScanning.value) "Stop Scan" else "Start Scan")
-                    }
-*/
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Display the scanned devices
