@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -38,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -101,7 +103,8 @@ class ScanActivity : ComponentActivity() {
                                 startScan()
                             }
                             isScanning.value = !isScanning.value
-                        }
+                        },
+                                modifier = Modifier.size(80.dp)
                     ) {
                         androidx.compose.material3.Icon(
                             painter = painterResource(
@@ -110,7 +113,8 @@ class ScanActivity : ComponentActivity() {
                                 } else R.drawable.play_circle
                             ),
                             contentDescription = if (isScanning.value) "Pause Scan" else "Start Scan",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = Color(android.graphics.Color.parseColor("#FF0099CC")),
+                            modifier = Modifier.size(64.dp)
                         )
                     }
                     // Button to start/stop scan

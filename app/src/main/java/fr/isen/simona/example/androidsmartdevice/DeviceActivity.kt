@@ -2,6 +2,7 @@ package fr.isen.simona.example.androidsmartdevice
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -23,73 +24,65 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 
 class DeviceActivity : ComponentActivity() {
 
     private var bluetoothGatt: BluetoothGatt? = null
+    private var bluetoothDevice: BluetoothDevice? = null
+    private var ledCharacteristic: BluetoothGattCharacteristic? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val deviceName = intent.getStringExtra("deviceName") ?: "Unknown Device"
         val deviceAddress = intent.getStringExtra("deviceAddress") ?: "Unknown Address"
-        val deviceRSSI = intent.getStringExtra("deviceRSSI") ?: "Unknown RSSI"
-        val device = intent.getParcelableExtra<BluetoothDevice>("device")
+       // val deviceRSSI = intent.getStringExtra("deviceRSSI") ?: "Unknown RSSI"
+       // val device = intent.getParcelableExtra<BluetoothDevice>("device")
+        //bluetoothDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
 
         setContent {
-            DeviceScreen(deviceName, deviceAddress, deviceRSSI)
+            DeviceScreen(deviceName, deviceAddress= deviceAddress)
         }
 
+        /*
         // Connect to the Bluetooth device
         device?.let {
             connectToDevice(it)
         }
+
+         */
     }
 
     @SuppressLint("MissingPermission")
-    private fun connectToDevice(device: BluetoothDevice) {
-        bluetoothGatt = device.connectGatt(this, false, object : BluetoothGattCallback() {
+    private fun connectToDevice() {
+        bluetoothGatt = bluetoothDevice?.connectGatt(this, false, object : BluetoothGattCallback() {
             override fun onConnectionStateChange(
-                gatt: BluetoothGatt?,
+                gatt: BluetoothGatt,
                 status: Int,
                 newState: Int
             ) {
-                super.onConnectionStateChange(gatt, status, newState)
-                when (newState) {
-                    BluetoothProfile.STATE_CONNECTED -> {
-                        Log.i("DeviceActivity", "Connected to GATT server.")
-                        runOnUiThread {
-                            Toast.makeText(this@DeviceActivity, "Connected to ${device.name}", Toast.LENGTH_SHORT).show()
-                        }
-                        // Start service discovery
-                        bluetoothGatt?.discoverServices()
-                    }
-                    BluetoothProfile.STATE_DISCONNECTED -> {
-                        Log.i("DeviceActivity", "Disconnected from GATT server.")
-                        runOnUiThread {
-                            Toast.makeText(this@DeviceActivity, "Disconnected from ${device.name}", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    Log.d("BLE", "Connected to GATT server. Identifying services...")
+                    gatt.discoverServices()
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    Log.d("BLE", "Disconnected from GATT server.")
                 }
             }
 
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-                super.onServicesDiscovered(gatt, status)
+                //super.onServicesDiscovered(gatt, status)
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    Log.i("DeviceActivity", "Services discovered.")
-                    // Here you can interact with the discovered services and characteristics
-                    val service = gatt?.getService(YOUR_SERVICE_UUID)
-                    service?.let {
-                        // Example: Read a characteristic
-                        val characteristic = it.getCharacteristic(YOUR_CHARACTERISTIC_UUID)
-                        gatt.readCharacteristic(characteristic)
-                    }
+                    val services = gatt?.services
+                    ledCharacteristic = services?.get(2)?.characteristics?.get(0)
+                    Log.d("BLE", "Services discovered: ${services?.map { it.uuid }}")
                 } else {
-                    Log.w("DeviceActivity", "onServicesDiscovered received: $status")
+                    Log.e("BLE", "Service discovery failed with status $status")
                 }
             }
-
+/*
             @Deprecated("Deprecated in Java")
             override fun onCharacteristicRead(
                 gatt: BluetoothGatt?,
@@ -102,20 +95,118 @@ class DeviceActivity : ComponentActivity() {
                     Log.i("DeviceActivity", "Characteristic read: ${characteristic.value}")
                 }
             }
+ */
+            override fun onCharacteristicWrite(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                status: Int
+            ) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Log.d("BLE", "Characteristic written successfully: ${characteristic.uuid}")
+                } else {
+                    Log.e("BLE", "Failed to write characteristic: ${characteristic.uuid}")
+                }
+            }
         })
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) != PackageManager.PERMISSION_GRANTED
-        )
-            bluetoothGatt?.close()
+    @SuppressLint("MissingPermission")
+    private fun disconnectFromDevice() {
+        bluetoothGatt?.disconnect()
+        bluetoothGatt?.close()
+        bluetoothGatt = null
+        Log.d("BLE", "Disconnected from device.")
+        Toast.makeText(this, "Disconnected from device", Toast.LENGTH_SHORT).show()
     }
 
+    private fun writeToLEDCharacteristic(state: LEDStateEnum) {
+        if (ledCharacteristic != null) {
+            ledCharacteristic?.value = state.hex
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            }
+            bluetoothGatt?.writeCharacteristic(ledCharacteristic)
+            Log.d("BLE", "LED state set to: ${state.name}")
+        } else {
+            Log.e("BLE", "LED characteristic not found.")
+        }
+    }
+
+    @SuppressLint("MissingPermission")
     @Composable
+    fun DeviceScreen(deviceName: String?, deviceAddress: String?) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Device Info", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Name: ${deviceName ?: "Unknown"}")
+            Text("Address: ${deviceAddress ?: "Unknown"}")
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = { connectToDevice() },
+                modifier = Modifier.fillMaxWidth().padding(8.dp)
+            ) {
+                Text("Connect to Device")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { writeToLEDCharacteristic(LEDStateEnum.LED_1) },
+                modifier = Modifier.fillMaxWidth().padding(8.dp)
+            ) {
+                Text("Turn On LED 1")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { writeToLEDCharacteristic(LEDStateEnum.NONE) },
+                modifier = Modifier.fillMaxWidth().padding(8.dp)
+            ) {
+                Text("Turn Off LED")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { disconnectFromDevice() },
+                modifier = Modifier.fillMaxWidth().padding(8.dp)
+            ) {
+                Text("Disconnect from Device")
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onDestroy() {
+        super.onDestroy()
+        disconnectFromDevice()
+    }
+}
+
+
+@Composable
     fun DeviceScreen(deviceName: String, deviceAddress: String, deviceRSSI: String) {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -141,11 +232,5 @@ class DeviceActivity : ComponentActivity() {
         }
     }
 
-    companion object {
-        // Replace these UUIDs with your actual service and characteristic UUIDs
-        private val YOUR_SERVICE_UUID = java.util.UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb")
-        private val YOUR_CHARACTERISTIC_UUID = java.util.UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb")
-    }
-}
 
 
