@@ -24,11 +24,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidSmartDevice"
         tools:targetApi="31">
+
         <activity
             android:name=".ScanActivity"
             android:exported="true"
             android:label="BLE Scan"
             android:theme="@style/Theme.AndroidSmartDevice" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

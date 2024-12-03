@@ -8,7 +8,6 @@ import android.bluetooth.le.ScanCallback
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.bluetooth.le.ScanResult
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -231,7 +230,7 @@ fun ScanScreen(
                 painter = painterResource(
                     id = if (isScanning) R.drawable.pause_circle else R.drawable.play_circle
                 ),
-                contentDescription = if (isScanning) "Arrêter le scan" else "Démarrer le scan", tint = Color(android.graphics.Color.parseColor("#FF0099CC")),
+                contentDescription = if (isScanning) "Stop scan" else "Launch scan", tint = Color(android.graphics.Color.parseColor("#FF0099CC")),
                 modifier = Modifier.size(64.dp)
             )
         }

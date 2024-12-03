@@ -45,14 +45,7 @@ class DeviceActivity : ComponentActivity() {
         setContent {
             DeviceScreen(deviceName, deviceAddress= deviceAddress)
         }
-
-        /*
-        // Connect to the Bluetooth device
-        device?.let {
-            connectToDevice(it)
-        }
-
-         */
+        
     }
 
     @SuppressLint("MissingPermission")
