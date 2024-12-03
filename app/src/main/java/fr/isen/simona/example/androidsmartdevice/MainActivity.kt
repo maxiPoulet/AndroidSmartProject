@@ -78,11 +78,3 @@ fun MainPage(innerPadding: PaddingValues, onButtonClick: () -> Unit) {
     }
 }
 
-/*@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AndroidSmartDeviceTheme {
-        MainPage(PaddingValues())
-    }
-}
- */

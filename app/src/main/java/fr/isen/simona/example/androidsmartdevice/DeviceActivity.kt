@@ -38,14 +38,10 @@ class DeviceActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val deviceName = intent.getStringExtra("deviceName") ?: "Unknown Device"
         val deviceAddress = intent.getStringExtra("deviceAddress") ?: "Unknown Address"
-       // val deviceRSSI = intent.getStringExtra("deviceRSSI") ?: "Unknown RSSI"
-       // val device = intent.getParcelableExtra<BluetoothDevice>("device")
-        //bluetoothDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
 
         setContent {
             DeviceScreen(deviceName, deviceAddress= deviceAddress)
         }
-        
     }
 
     @SuppressLint("MissingPermission")
@@ -119,13 +115,6 @@ class DeviceActivity : ComponentActivity() {
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return
             }
             bluetoothGatt?.writeCharacteristic(ledCharacteristic)
