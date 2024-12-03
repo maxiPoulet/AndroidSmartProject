@@ -47,17 +47,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainPage(innerPadding: PaddingValues, onButtonClick: () -> Unit) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.Center
     ) {
-       Box(modifier = Modifier.fillMaxSize(),
-           contentAlignment = Alignment.Center){
-           Column {
-               //horizontalAlignment = Alignment.CenterHorizontally
+       Column(
+           verticalArrangement = Arrangement.SpaceBetween,
+           horizontalAlignment = Alignment.CenterHorizontally
+       ){
            Text(
                text = "Welcome Traveler, to AndroidSmart Device",
                fontSize = 24.sp,
@@ -77,7 +76,6 @@ fun MainPage(innerPadding: PaddingValues, onButtonClick: () -> Unit) {
                Text("Valider")
            }
        }
-        }
     }
 }
 
